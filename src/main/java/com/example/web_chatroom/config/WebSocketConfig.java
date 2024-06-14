@@ -39,7 +39,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(final StompEndpointRegistry registry) {
         registry
                 .addEndpoint("/stomp/chat")// 엔드포인트
-                .setAllowedOriginPatterns("*").withSockJS()//왜 http로 해놨냐.. 당연히 안되지.
+                .setAllowedOrigins("*").withSockJS()//왜 http로 해놨냐.. 당연히 안되지.
                 ;
         registry
                 .addEndpoint("/stomp/ws")
