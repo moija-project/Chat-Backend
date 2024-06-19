@@ -11,7 +11,7 @@ public class RabbitMQService {
     private final RabbitAdmin rabbitAdmin;
 
     @Autowired
-    public RabbitMQService(RabbitAdmin rabbitAdmin, RabbitTemplate rabbitTemplate) {
+    public RabbitMQService(RabbitAdmin rabbitAdmin, RabbitTemplate alarmRabbitTemplate) {
         this.rabbitAdmin = rabbitAdmin;
     }
 

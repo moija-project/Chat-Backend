@@ -5,25 +5,20 @@ import com.example.web_chatroom.DTO.ChatDTO;
 import com.example.web_chatroom.DTO.ChatRoomDTO;
 import com.example.web_chatroom.entity.ChatMember;
 import com.example.web_chatroom.entity.ChatRoom;
-import com.example.web_chatroom.global.BaseResponse;
 import com.example.web_chatroom.repository.ChatMemberRepository;
 import com.example.web_chatroom.repository.ChatRoomRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -35,7 +30,7 @@ public class MessageService {
     @Autowired
     private ChatMemberRepository chatMemberRepository;
     @Autowired
-    private MongoTemplate mongoTemplate;
+    private MongoService mongoService;
 
     public List<ChatRoomDTO> myChatRoom(String userId) {
         //읽지않은 채팅 개수 알아오기
@@ -63,7 +58,7 @@ public class MessageService {
         readQuery.limit(1);
 
         // "type"이 "READ"인 문서의 "Regdate" 값을 가져옵니다.
-        ChatDTO chat = mongoTemplate.findOne(readQuery, ChatDTO.class,"message-"+chatRoomId);
+        ChatDTO chat = mongoService.findOne(readQuery, ChatDTO.class,"message-"+chatRoomId);
         if (chat == null) {
             return countTalk();
         }
@@ -78,7 +73,7 @@ public class MessageService {
     private int countTalk() {
         // "type"이 "TALK"이고 "Regdate"가 "READ" 이후인 문서의 개수를 가져옵니다.
         Query talkCountQuery = new Query(Criteria.where("type").is("TALK"));
-        int talkCount = (int) mongoTemplate.count(talkCountQuery, ChatDTO.class);
+        int talkCount = (int) mongoService.count(talkCountQuery, ChatDTO.class);
         if(talkCount > 99) {
             return 100;
         }
@@ -88,7 +83,7 @@ public class MessageService {
     private int countTalk(LocalDateTime readRegdate) {
         // "type"이 "TALK"이고 "Regdate"가 "READ" 이후인 문서의 개수를 가져옵니다.
         Query talkCountQuery = new Query(Criteria.where("type").is("TALK").and("Regdate").gt(readRegdate));
-        int talkCount = (int) mongoTemplate.count(talkCountQuery, ChatDTO.class);
+        int talkCount = (int) mongoService.count(talkCountQuery, ChatDTO.class);
         if(talkCount > 99) {
             return 100;
         }
@@ -100,7 +95,7 @@ public class MessageService {
         readQuery.with(Sort.by(Sort.Direction.DESC, "regDate"));
         //readQuery.fields().include("regDate");
         readQuery.limit(1);
-        ChatDTO chat = mongoTemplate.findOne(readQuery, ChatDTO.class,"message-"+chatRoomId);
+        ChatDTO chat = mongoService.findOne(readQuery, ChatDTO.class,"message-"+chatRoomId);
         if(chat == null) {
             return Map.of("message","새로운 대화를 시작해보세요.");
         }
@@ -137,7 +132,7 @@ public class MessageService {
     }
 
     public void storeMessage(ChatDTO chat,String collectionName) {
-        mongoTemplate.save(chat,collectionName);
+        mongoService.storeMessage(chat,collectionName);
     }
 
     public Page getPreviousChat(String chatRoomId,Pageable pageable) {
@@ -146,11 +141,11 @@ public class MessageService {
                 .skip((long) pageable.getPageSize() * pageable.getPageNumber()) // offset
                 .limit(pageable.getPageSize());
         query.with(Sort.by(Sort.Direction.DESC, "regDate"));
-        List<ChatDTO> chats = mongoTemplate.find(query, ChatDTO.class, "message-"+chatRoomId);
+        List<ChatDTO> chats = mongoService.find(query, ChatDTO.class, "message-"+chatRoomId);
         Page<ChatDTO> chatPage = PageableExecutionUtils.getPage(
                 chats,
                 pageable,
-                () -> mongoTemplate.count(query.skip(-1).limit(-1), ChatDTO.class)
+                () -> mongoService.count(query.skip(-1).limit(-1), ChatDTO.class)
                 // query.skip(-1).limit(-1)의 이유는 현재 쿼리가 페이징 하려고 하는 offset 까지만 보기에 이를 맨 처음부터 끝까지로 set 해줘 정확한 도큐먼트 개수를 구한다.
         );
         return chatPage;

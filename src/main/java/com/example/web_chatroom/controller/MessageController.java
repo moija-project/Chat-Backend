@@ -44,7 +44,7 @@ public class MessageController {
         Map<String,String> response = messageService.newChatRoom(userId,chatCreateDTO);
         // 최초의 메시지를 보내놓는
         rabbitController.send(ChatDTO.builder()
-                        .type(Type.TALK)
+                        .type(Type.TALK.toString())//edit
                         .memberId(userId)
                         .nickname(chatCreateDTO.nickname())
                         .regDate(LocalDateTime.now())

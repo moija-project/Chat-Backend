@@ -3,6 +3,7 @@ package com.example.web_chatroom.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
@@ -15,6 +16,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 @Configuration
 @EnableRabbit
 public class RabbitConfig {
@@ -22,28 +26,49 @@ public class RabbitConfig {
     Environment env;
     private static final String CHAT_QUEUE_NAME = "chat.queue";
     private static final String CHAT_EXCHANGE_NAME = "chat.exchange";
-    private static final String ROUTING_KEY = "room.*";
+    private static final String CHAT_ROUTING_KEY = "room.*";
+
+    private static final String ALARM_QUEUE_NAME = "alarm.queue";
+    private static final String ALARM_EXCHANGE_NAME = "alarm.exchange";
+    private static final String ALARM_ROUTING_KEY = "user.*";
 
     //Queue 등록
     @Bean
-    public Queue queue(){ return new Queue(CHAT_QUEUE_NAME, true); }
+    public Queue chatQueue(){ return new Queue(CHAT_QUEUE_NAME, true); }
+    @Bean
+    public Queue alarmQueue() { return new Queue(ALARM_QUEUE_NAME, true); }
 
     //Exchange 등록
     @Bean
-    public TopicExchange exchange(){ return new TopicExchange(CHAT_EXCHANGE_NAME); }
+    public TopicExchange chatExchange(){ return new TopicExchange(CHAT_EXCHANGE_NAME); }
+    @Bean
+    public TopicExchange alarmExchange(){ return new TopicExchange(ALARM_EXCHANGE_NAME); }
 
     //Exchange와 Queue 바인딩
     @Bean
-    public Binding binding(Queue queue, TopicExchange exchange) {
-        return BindingBuilder.bind(queue).to(exchange).with(ROUTING_KEY);
+    public Binding chatBinding(Queue chatQueue, TopicExchange chatExchange) {
+        return BindingBuilder.bind(chatQueue).to(chatExchange).with(CHAT_ROUTING_KEY);
     }
+    @Bean
+    public Binding alarmBinding(Queue alarmQueue, TopicExchange alarmExchange) {
+        return BindingBuilder.bind(alarmQueue).to(alarmExchange).with(ALARM_ROUTING_KEY);
+    }
+
 
     /* messageConverter를 커스터마이징 하기 위해 Bean 새로 등록 */
     @Bean
-    public RabbitTemplate rabbitTemplate(){
+    public RabbitTemplate chatRabbitTemplate(){
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory());
         rabbitTemplate.setMessageConverter(jsonMessageConverter());
         rabbitTemplate.setRoutingKey(CHAT_QUEUE_NAME);
+        return rabbitTemplate;
+    }
+
+    @Bean
+    public RabbitTemplate alarmRabbitTemplate(){
+        RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory());
+        rabbitTemplate.setMessageConverter(jsonMessageConverter());
+        rabbitTemplate.setRoutingKey(ALARM_QUEUE_NAME);
         return rabbitTemplate;
     }
 
@@ -76,7 +101,12 @@ public class RabbitConfig {
     public Jackson2JsonMessageConverter jsonMessageConverter(){
         //LocalDateTime serializable을 위해
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
+        // previous
+        // objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
+
+        // 타임스탬프로 쓰지 않도록 설정
+        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+
         objectMapper.registerModule(dateTimeModule());
 
         Jackson2JsonMessageConverter converter = new Jackson2JsonMessageConverter(objectMapper);
@@ -86,7 +116,14 @@ public class RabbitConfig {
 
     @Bean
     public JavaTimeModule dateTimeModule(){
-        return new JavaTimeModule();
+        // JavaTimeModule을 등록하여 Java 8 날짜/시간 API 지원
+        JavaTimeModule javaTimeModule = new JavaTimeModule();
+
+        // LocalDateTime을 원하는 형식으로 직렬화하기 위한 Serializer 등록
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+        LocalDateTimeSerializer localDateTimeSerializer = new LocalDateTimeSerializer(dateTimeFormatter);
+        javaTimeModule.addSerializer(LocalDateTime.class, localDateTimeSerializer);
+        return javaTimeModule;
     }
 
     @Bean

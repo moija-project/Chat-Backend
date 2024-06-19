@@ -24,8 +24,8 @@ import java.util.Map;
 @Log4j2
 public class StompRabbitController {
 
-
-    private final RabbitTemplate rabbitTemplate;
+    @Autowired
+    private final RabbitTemplate chatRabbitTemplate;
     @Autowired
     private RabbitMQService rabbitMQService;
     @Autowired
@@ -40,17 +40,19 @@ public class StompRabbitController {
         
         chat.setMessage(chat.getNickname()+"님께서 입장하셨습니다.");
         chat.setRegDate(LocalDateTime.now());
-        chat.setType(Type.ENTER);
+        chat.setType(Type.ENTER.toString());
 
-        rabbitTemplate.convertAndSend(CHAT_EXCHANGE_NAME, "room." + chatRoomId, chat); // exchange
+        chatRabbitTemplate.convertAndSend(CHAT_EXCHANGE_NAME, "room." + chatRoomId, chat); // exchange
         messageService.storeMessage(chat,"message-"+chatRoomId);
     }
 
     @MessageMapping("chat.message.{chatRoomId}")
     public void send(@Payload ChatDTO chat, @DestinationVariable String chatRoomId){
         chat.setRegDate(LocalDateTime.now());
-        chat.setType(Type.TALK);
-        rabbitTemplate.convertAndSend(CHAT_EXCHANGE_NAME, "room." + chatRoomId, chat);
+        chat.setType(Type.TALK.toString());
+        chatRabbitTemplate.convertAndSend(CHAT_EXCHANGE_NAME, "room." + chatRoomId, chat);
+        //상대방이 채팅방에 없다면 푸시알람으로 요청시키는거 해야하는데...
+
         messageService.storeMessage(chat,"message-"+chatRoomId);
     }
 
@@ -58,8 +60,8 @@ public class StompRabbitController {
     @MessageMapping("chat.read.{chatRoomId}")
     public void read(@Payload ChatDTO chat, @DestinationVariable String chatRoomId) {
         chat.setRegDate(LocalDateTime.now());
-        chat.setType(Type.READ);
-        rabbitTemplate.convertAndSend(CHAT_EXCHANGE_NAME,"room."+chatRoomId,chat);
+        chat.setType(Type.READ.toString());
+        chatRabbitTemplate.convertAndSend(CHAT_EXCHANGE_NAME,"room."+chatRoomId,chat);
         messageService.storeMessage(chat,"message-"+chatRoomId);
     }
 
@@ -68,6 +70,7 @@ public class StompRabbitController {
     //receive()는 단순히 큐에 들어온 메세지를 소비만 한다. (현재는 디버그용도)
     @RabbitListener(queues = "chat.queue")
     public void receive(ChatDTO chat){
+        System.out.println("여기 밑에서 에러날걸요");
 
         System.out.println("received : " + chat.getMessage() + " | chatting room : "+ chat.getMemberId());
     }

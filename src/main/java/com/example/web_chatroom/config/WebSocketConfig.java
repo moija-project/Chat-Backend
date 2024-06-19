@@ -3,10 +3,8 @@ package com.example.web_chatroom.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
-import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.util.AntPathMatcher;
-import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
@@ -39,7 +37,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(final StompEndpointRegistry registry) {
         registry
                 .addEndpoint("/stomp/chat")// 엔드포인트
-                .setAllowedOrigins("*").withSockJS()//왜 http로 해놨냐.. 당연히 안되지.
+                .setAllowedOriginPatterns("*").withSockJS()//왜 http로 해놨냐.. 당연히 안되지.
                 ;
         registry
                 .addEndpoint("/stomp/ws")

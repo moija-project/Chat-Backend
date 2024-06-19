@@ -5,13 +5,15 @@ import com.example.web_chatroom.repository.PushAlarmRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 @Service@RequiredArgsConstructor@Slf4j
 public class AlarmService {
     @Autowired
-    private PushAlarmRepository alarmRepository;
-    public void save(PushAlarm pushAlarm) {
-        alarmRepository.save(pushAlarm);
+    private MongoService mongoService;
+
+    public void storePersonalDB(PushAlarm pushAlarm) {
+        mongoService.storeMessage(pushAlarm,"pushalarm-"+pushAlarm.getUserId());
     }
 }

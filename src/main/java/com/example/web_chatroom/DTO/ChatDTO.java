@@ -9,10 +9,9 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-@ToString
+@Builder@Setter@Getter
 public class ChatDTO {
-    private Type type;
+    private String type;
 
     private String memberId;
 
@@ -20,6 +19,6 @@ public class ChatDTO {
 
     private String message;
 
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonDeserialize//(using = LocalDateTimeDeserializer.class)
     private LocalDateTime regDate;
 }
