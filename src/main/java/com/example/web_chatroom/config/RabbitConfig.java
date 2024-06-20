@@ -3,7 +3,8 @@ package com.example.web_chatroom.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+
+import com.fasterxml.jackson.datatype.jsr310.ser.ZonedDateTimeSerializer;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
@@ -16,7 +17,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Configuration
@@ -33,30 +34,18 @@ public class RabbitConfig {
     private static final String ALARM_ROUTING_KEY = "user.*";
 
     //Queue 등록
-    @Bean
+    @Bean("chatQueue")
     public Queue chatQueue(){ return new Queue(CHAT_QUEUE_NAME, true); }
-    @Bean
+    @Bean("alarmQueue")
     public Queue alarmQueue() { return new Queue(ALARM_QUEUE_NAME, true); }
 
-    //Exchange 등록
-    @Bean
+     //Exchange 등록
+    @Bean("chatExchange")
     public TopicExchange chatExchange(){ return new TopicExchange(CHAT_EXCHANGE_NAME); }
-    @Bean
-    public TopicExchange alarmExchange(){ return new TopicExchange(ALARM_EXCHANGE_NAME); }
-
-    //Exchange와 Queue 바인딩
-    @Bean
-    public Binding chatBinding(Queue chatQueue, TopicExchange chatExchange) {
-        return BindingBuilder.bind(chatQueue).to(chatExchange).with(CHAT_ROUTING_KEY);
-    }
-    @Bean
-    public Binding alarmBinding(Queue alarmQueue, TopicExchange alarmExchange) {
-        return BindingBuilder.bind(alarmQueue).to(alarmExchange).with(ALARM_ROUTING_KEY);
-    }
 
 
     /* messageConverter를 커스터마이징 하기 위해 Bean 새로 등록 */
-    @Bean
+    @Bean("chatRabbitTemplate")
     public RabbitTemplate chatRabbitTemplate(){
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory());
         rabbitTemplate.setMessageConverter(jsonMessageConverter());
@@ -64,7 +53,7 @@ public class RabbitConfig {
         return rabbitTemplate;
     }
 
-    @Bean
+    @Bean("alarmRabbitTemplate")
     public RabbitTemplate alarmRabbitTemplate(){
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory());
         rabbitTemplate.setMessageConverter(jsonMessageConverter());
@@ -97,16 +86,15 @@ public class RabbitConfig {
         return factory;
     }
 
+    //시간 포맷을 읽어들여 변한하기 위한 컨버터를 사용한다.
     @Bean
     public Jackson2JsonMessageConverter jsonMessageConverter(){
-        //LocalDateTime serializable을 위해
         ObjectMapper objectMapper = new ObjectMapper();
         // previous
         // objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
 
         // 타임스탬프로 쓰지 않도록 설정
         objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-
         objectMapper.registerModule(dateTimeModule());
 
         Jackson2JsonMessageConverter converter = new Jackson2JsonMessageConverter(objectMapper);
@@ -119,10 +107,9 @@ public class RabbitConfig {
         // JavaTimeModule을 등록하여 Java 8 날짜/시간 API 지원
         JavaTimeModule javaTimeModule = new JavaTimeModule();
 
-        // LocalDateTime을 원하는 형식으로 직렬화하기 위한 Serializer 등록
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
-        LocalDateTimeSerializer localDateTimeSerializer = new LocalDateTimeSerializer(dateTimeFormatter);
-        javaTimeModule.addSerializer(LocalDateTime.class, localDateTimeSerializer);
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX");
+        ZonedDateTimeSerializer zonedDateTimeSerializer = new ZonedDateTimeSerializer(dateTimeFormatter);
+        javaTimeModule.addSerializer(ZonedDateTime.class, zonedDateTimeSerializer);
         return javaTimeModule;
     }
 
@@ -131,8 +118,4 @@ public class RabbitConfig {
         return new RabbitAdmin(connectionFactory);
     }
 
-//    @Bean
-//    MessageListenerAdapter listenerAdapter(Receiver receiver) {
-//        return new MessageListenerAdapter(receiver, "receiveMessage");
-//    }
 }
