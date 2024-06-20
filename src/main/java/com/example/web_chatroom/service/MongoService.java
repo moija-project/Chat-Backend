@@ -1,6 +1,5 @@
 package com.example.web_chatroom.service;
 
-import com.example.web_chatroom.DTO.ChatDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

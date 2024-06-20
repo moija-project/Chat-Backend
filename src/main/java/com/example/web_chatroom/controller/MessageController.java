@@ -1,6 +1,7 @@
 package com.example.web_chatroom.controller;
 
 import com.example.web_chatroom.DTO.*;
+import com.example.web_chatroom.entity.ChatDTO;
 import com.example.web_chatroom.global.BaseException;
 import com.example.web_chatroom.global.BaseResponse;
 import com.example.web_chatroom.global.BaseResponseStatus;
@@ -15,10 +16,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -44,10 +45,10 @@ public class MessageController {
         Map<String,String> response = messageService.newChatRoom(userId,chatCreateDTO);
         // 최초의 메시지를 보내놓는
         rabbitController.send(ChatDTO.builder()
-                        .type(Type.TALK.toString())//edit
+                        .type(Type.TALK)//edit
                         .memberId(userId)
                         .nickname(chatCreateDTO.nickname())
-                        .regDate(LocalDateTime.now())
+                        .regDate(ZonedDateTime.now(ZoneId.of("Asia/Seoul")))
                         .message("<"+chatCreateDTO.postTitle()+">의 모임장 님이 "+chatCreateDTO.nickname()+"님의 채팅 요청을 수락했어요!")
                 .build(), response.get("chatRoomId"));
         return new BaseResponse<>(response);

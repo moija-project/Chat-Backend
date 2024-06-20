@@ -13,7 +13,7 @@ public class AlarmService {
     @Autowired
     private MongoService mongoService;
 
-    public void storePersonalDB(PushAlarm pushAlarm) {
-        mongoService.storeMessage(pushAlarm,"pushalarm-"+pushAlarm.getUserId());
+    public void storePersonalDB(PushAlarm pushAlarm,String userId) {
+        mongoService.storeMessage(pushAlarm,"pushalarm-"+userId);
     }
 }
