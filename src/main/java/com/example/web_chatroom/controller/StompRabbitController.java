@@ -4,13 +4,9 @@ package com.example.web_chatroom.controller;
 import com.example.web_chatroom.entity.ChatDTO;
 import com.example.web_chatroom.DTO.Type;
 import com.example.web_chatroom.service.MessageService;
-import com.example.web_chatroom.service.RabbitMQService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.amqp.AmqpRejectAndDontRequeueException;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.amqp.rabbit.support.ListenerExecutionFailedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -20,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,8 +24,6 @@ public class StompRabbitController {
 
     @Autowired@Qualifier("chatRabbitTemplate")
     private final RabbitTemplate chatRabbitTemplate;
-    @Autowired
-    private RabbitMQService rabbitMQService;
     @Autowired
     private MessageService messageService;
 

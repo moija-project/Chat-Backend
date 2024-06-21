@@ -24,7 +24,7 @@ jib {
     }
     to {
         image = "shinyenggwak/chat-moija"
-        tags = ["cloud-0.2.5"]
+        tags = ["cloud-0.2.6"]
     }
 }
 
