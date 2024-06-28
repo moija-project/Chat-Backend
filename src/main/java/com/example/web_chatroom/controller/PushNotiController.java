@@ -1,11 +1,10 @@
 package com.example.web_chatroom.controller;
 
-import com.example.web_chatroom.DTO.AlarmDTO;
-import com.example.web_chatroom.entity.PushAlarm;
-import com.example.web_chatroom.service.AlarmService;
+import com.example.web_chatroom.DTO.NotifyDTO;
+import com.example.web_chatroom.entity.PushNoti;
+import com.example.web_chatroom.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -21,18 +20,17 @@ import java.time.ZonedDateTime;
 @RestController
 @RequiredArgsConstructor
 @Log4j2
-public class PushAlarmController {
-    @Autowired@Qualifier("alarmRabbitTemplate")
-    private final RabbitTemplate alarmRabbitTemplate;
+public class PushNotiController {
+    @Autowired@Qualifier("notifyRabbitTemplate")
+    private final RabbitTemplate notifyRabbitTemplate;
 
-    private final static String ALARM_QUEUE_NAME = "alarm.queue";
-    private final static String ALARM_EXCHANGE_NAME = "alarm.exchange";
+    private final static String NOTIFY_EXCHANGE_NAME = "notify.exchange";
     @Autowired
-    private AlarmService alarmService;
+    private NotificationService notificationService;
 
     // 이거는 postService나 채팅이나 관련된 api에서 호출해야한다.
-    @MessageMapping("alarm.publish.{userId}")
-    public void pubAlarm(@Payload AlarmDTO alarmDTO, @DestinationVariable String userId) {
+    @MessageMapping("notify.publish.{userId}")
+    public void pubNoti(@Payload NotifyDTO notifyDTO, @DestinationVariable String userId) {
         /**
          * type 0 : 서버로부터의 메시지
          * type 1 : 가입 요청 승낙됨
@@ -41,15 +39,15 @@ public class PushAlarmController {
          * type 4 : 받은 채팅
          *
          * **/
-        PushAlarm pushAlarm = PushAlarm.builder()
-                .pushType(alarmDTO.pushType())
-                .message(alarmDTO.message())
+        PushNoti pushNoti = PushNoti.builder()
+                .pushType(notifyDTO.pushType())
+                .message(notifyDTO.message())
                 .nonRead(true)
                 .pubDate(ZonedDateTime.now(ZoneId.of("Asia/Seoul")))
                 .build();
         // 라우팅 키는 user.user123
-        alarmRabbitTemplate.convertAndSend(ALARM_EXCHANGE_NAME,"user."+userId,pushAlarm);
-        alarmService.storePersonalDB(pushAlarm,userId);
+        notifyRabbitTemplate.convertAndSend(NOTIFY_EXCHANGE_NAME,"user."+userId, pushNoti);
+        notificationService.storePersonalDB(pushNoti,userId);
     }
 
 }

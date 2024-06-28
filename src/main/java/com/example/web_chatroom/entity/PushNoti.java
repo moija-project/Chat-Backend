@@ -10,8 +10,8 @@ import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.ZonedDateTime;
 
-@Data@Document(collection = "pushalarm")@Builder@NoArgsConstructor@AllArgsConstructor
-public class PushAlarm {
+@Data@Document(collection = "pushnoti")@Builder@NoArgsConstructor@AllArgsConstructor
+public class PushNoti {
     @Id
     String pushId;
     String message;

@@ -36,9 +36,6 @@ dependencies {
     //외부 브로커를 사용하기 위해
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-reactor-netty', version: '2.4.6'
 
-//jackson2json에서 LocalDateTime을 handling 하기 위해 -> Zoned로 바꿨는데 될까?
-    //implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.12.4'
-
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
     implementation 'org.springframework.boot:spring-boot-starter-web'
 

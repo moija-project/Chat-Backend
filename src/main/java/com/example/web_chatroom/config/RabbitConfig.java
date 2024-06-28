@@ -27,32 +27,32 @@ public class RabbitConfig {
     Environment env;
     private static final String CHAT_QUEUE_NAME = "chat.queue";
     private static final String CHAT_EXCHANGE_NAME = "chat.exchange";
-    private static final String ALARM_EXCHANGE_NAME = "alarm.exchange";
+    private static final String NOTIFY_EXCHANGE_NAME = "notify.exchange";
 
-    private static final String ALARM_QUEUE_NAME = "alarm.queue";
+    private static final String NOTIFY_QUEUE_NAME = "notify.queue";
 
     private static final String CHAT_ROUTING_KEY = "room.*";
-    private static final String ALARM_ROUTING_KEY = "user.*";
+    private static final String NOTIFY_ROUTING_KEY = "user.*";
 
     //Queue 등록
     @Bean("chatQueue")
     public Queue chatQueue(){ return new Queue(CHAT_QUEUE_NAME, true); }
-    @Bean("alarmQueue")
-    public Queue alarmQueue() { return new Queue(ALARM_QUEUE_NAME, true); }
+    @Bean("notifyQueue")
+    public Queue notifyQueue() { return new Queue(NOTIFY_QUEUE_NAME, true); }
 
      //Exchange 등록
     @Bean("chatExchange")
     public TopicExchange chatExchange(){ return new TopicExchange(CHAT_EXCHANGE_NAME); }
-    @Bean("alarmExchange")
-    public DirectExchange alarmExchange() { return new DirectExchange(ALARM_EXCHANGE_NAME); }
+    @Bean("notifyExchange")
+    public DirectExchange notifyExchange() { return new DirectExchange(NOTIFY_EXCHANGE_NAME); }
 
     @Bean("chatBinding")
     public Binding chatBinding(Queue chatQueue, TopicExchange chatExchange) {
         return BindingBuilder.bind(chatQueue).to(chatExchange).with(CHAT_ROUTING_KEY);
     }
-    @Bean("alarmBinding")
-    public Binding alarmBinding(Queue alarmQueue, DirectExchange alarmExchange) {
-        return BindingBuilder.bind(alarmQueue).to(alarmExchange).with(ALARM_ROUTING_KEY);
+    @Bean("notifyBinding")
+    public Binding notifyBinding(Queue notifyQueue, DirectExchange notifyExchange) {
+        return BindingBuilder.bind(notifyQueue).to(notifyExchange).with(NOTIFY_ROUTING_KEY);
     }
 
 
@@ -65,11 +65,11 @@ public class RabbitConfig {
         return rabbitTemplate;
     }
 
-    @Bean("alarmRabbitTemplate")
-    public RabbitTemplate alarmRabbitTemplate(){
+    @Bean("notifyRabbitTemplate")
+    public RabbitTemplate notifyRabbitTemplate(){
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory());
         rabbitTemplate.setMessageConverter(jsonMessageConverter());
-        rabbitTemplate.setRoutingKey(ALARM_QUEUE_NAME);
+        rabbitTemplate.setRoutingKey(NOTIFY_QUEUE_NAME);
         return rabbitTemplate;
     }
 
