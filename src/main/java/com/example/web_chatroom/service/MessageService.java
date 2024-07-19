@@ -137,7 +137,7 @@ public class MessageService {
         mongoTemplate.save(chat,collectionName);
     }
 
-    public Page getPreviousChat(String chatRoomId,Pageable pageable) {
+    public Page<ChatDTO> getPreviousChat(String chatRoomId,Pageable pageable) {
         Query query = new Query()
                 .with(pageable)
                 .skip((long) pageable.getPageSize() * pageable.getPageNumber()) // offset

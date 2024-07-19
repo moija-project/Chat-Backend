@@ -27,16 +27,15 @@ import java.util.Map;
 public class MessageController {
     @Autowired
     private StompRabbitController rabbitController;
-
     @Autowired
     private UserService userService;
     @Autowired
     private MessageService messageService;
 
     @PostMapping("/box")
-    public BaseResponse<List> myChatRoom(@RequestBody String userId) {
+    public BaseResponse<List<ChatRoomDTO>> myChatRoom(@RequestBody String userId) {
 
-        return new BaseResponse<List>(messageService.myChatRoom(userId ) );
+        return new BaseResponse<List<ChatRoomDTO>>(messageService.myChatRoom(userId ) );
     }
 
     //앞으로 exchange에 사용될 아이디를 뱉어준다. 참고로 시큐리티가 연결되지 않아서 매우 취약하다.
@@ -57,12 +56,12 @@ public class MessageController {
     // 이전에 내가 선택한 그 대화방에 이전에 있었던 대화를 로드해준다.(이때 소켓 연결 후 대화는 치지 않음)
     // 근데 페이지네이션 될때는 어떡하지.. 아마 프론트에서...소켓으로 받은 메시지 + 이전 리스트로 받은 메시지 잘 분배해서 처리해줘야할듯...
     @PostMapping(value="/list",consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public BaseResponse<Page> getPreviousChat(@RequestPart(name = "chat") ChatListDTO chatListDTO,@RequestPart(name = "userId") String userId) throws BaseException {
+    public BaseResponse<Page<ChatDTO>> getPreviousChat(@RequestPart(name = "chat") ChatListDTO chatListDTO,@RequestPart(name = "userId") String userId) throws BaseException {
         //위임받은 인증
         if(!userService.isRoomOwner(userId,chatListDTO.chatRoomId()))
             throw new BaseException(BaseResponseStatus.NOT_PRIVILEGE);
         Pageable pageable = PageRequest.of(chatListDTO.page_number(), chatListDTO.page_size());
-        return new BaseResponse<Page>(messageService.getPreviousChat(chatListDTO.chatRoomId(),pageable));
+        return new BaseResponse<>(messageService.getPreviousChat(chatListDTO.chatRoomId(),pageable));
     }
 
 }

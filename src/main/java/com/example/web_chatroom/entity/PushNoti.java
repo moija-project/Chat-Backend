@@ -19,6 +19,7 @@ public class PushNoti {
     Boolean nonRead;
     @Field("push_type")
     Integer pushType;
+    String link;
     @Field("pub_date")
     ZonedDateTime pubDate;
 

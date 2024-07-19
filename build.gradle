@@ -34,7 +34,9 @@ repositories {
 
 dependencies {
     //외부 브로커를 사용하기 위해
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-reactor-netty', version: '2.4.6'
+    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-reactor-netty
+    implementation 'org.springframework.boot:spring-boot-starter-reactor-netty:3.3.1' //2.4.6
+
 
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -42,6 +44,10 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-amqp'
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     testImplementation 'org.springframework.amqp:spring-rabbit-test'
+
+    // https://mvnrepository.com/artifact/org.springframework.batch/spring-batch-core
+    implementation 'org.springframework.batch:spring-batch-core:5.1.2'
+
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'

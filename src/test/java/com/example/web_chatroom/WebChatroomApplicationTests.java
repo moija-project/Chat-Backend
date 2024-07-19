@@ -8,6 +8,7 @@ class WebChatroomApplicationTests {
 
     @Test
     void contextLoads() {
+
     }
 
 }
