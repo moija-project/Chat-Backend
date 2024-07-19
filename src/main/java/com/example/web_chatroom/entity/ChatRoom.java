@@ -3,7 +3,6 @@ package com.example.web_chatroom.entity;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -13,7 +12,7 @@ public class ChatRoom {
     String chatRoomId;
     //이거 다른 디비니까 조인이 있으면 잘못설계한거긴 한데....
     //일단 cascade나.... 아님 조회하는거 좀 잘 해야함....
-    int recruitId;
+    Long recruitId;
     @Field(name = "chat_name")
     String chatName;
 }

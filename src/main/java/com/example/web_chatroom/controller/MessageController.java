@@ -41,7 +41,7 @@ public class MessageController {
 
     //앞으로 exchange에 사용될 아이디를 뱉어준다. 참고로 시큐리티가 연결되지 않아서 매우 취약하다.
     @PostMapping(value = "/create/one-to-one",consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public BaseResponse<Map> newChatRoom(@RequestPart(name = "userId") String userId, @RequestPart(name = "chat") ChatCreateDTO chatCreateDTO ) {
+    public Map<String,String> newChatRoom(@RequestPart(name = "userId") String userId, @RequestPart(name = "chat") ChatCreateDTO chatCreateDTO ) {
         Map<String,String> response = messageService.newChatRoom(userId,chatCreateDTO);
         // 최초의 메시지를 보내놓는
         rabbitController.send(ChatDTO.builder()
@@ -51,7 +51,7 @@ public class MessageController {
                         .regDate(ZonedDateTime.now(ZoneId.of("Asia/Seoul")))
                         .message("<"+chatCreateDTO.postTitle()+">의 모임장 님이 "+chatCreateDTO.nickname()+"님의 채팅 요청을 수락했어요!")
                 .build(), response.get("chatRoomId"));
-        return new BaseResponse<>(response);
+        return response;
     }
 
     // 이전에 내가 선택한 그 대화방에 이전에 있었던 대화를 로드해준다.(이때 소켓 연결 후 대화는 치지 않음)
